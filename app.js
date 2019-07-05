@@ -16,7 +16,7 @@ app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 
 // Mongo URI
-const mongoURI = 'mongodb://brad:brad@ds257838.mlab.com:57838/mongouploads';
+const mongoURI = 'mongodb://localhost:27017/mongouploads';
 
 // Create mongo connection
 const conn = mongoose.createConnection(mongoURI);
@@ -49,7 +49,17 @@ const storage = new GridFsStorage({
     });
   }
 });
-const upload = multer({ storage });
+
+const myStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, '/images/my-uploads'))
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+  }
+})
+
+const upload = multer({ storage: myStorage });
 
 // @route GET /
 // @desc Loads form
@@ -76,8 +86,8 @@ app.get('/', (req, res) => {
 
 // @route POST /upload
 // @desc  Uploads file to DB
-app.post('/upload', upload.single('file'), (req, res) => {
-  // res.json({ file: req.file });
+app.post('/upload', upload.single('avatar'), (req, res) => {
+  console.log(req.file);
   res.redirect('/');
 });
 
@@ -150,4 +160,4 @@ app.delete('/files/:id', (req, res) => {
 
 const port = 5000;
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+app.listen(port, () => console.log(`Server started on port http://localhost:${port}`));
